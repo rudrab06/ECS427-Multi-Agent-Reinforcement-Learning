@@ -1,238 +1,199 @@
-📘 Multi-Agent Reinforcement Learning – Assignment 1
+# Multi-Agent Reinforcement Learning – Assignment 1
 
 This repository contains the implementation and analysis of three Markov Decision Process (MDP) problems solved using:
 
-✅ Value Iteration
+- Value Iteration
+- Policy Iteration
+- Monte Carlo Methods
 
-✅ Policy Iteration
+The assignment focuses on robotics-oriented decision making under uncertainty.
 
-✅ Monte Carlo Methods
+---
 
-The project focuses on robotics-oriented decision making under uncertainty.
+# Repository Structure
 
-📂 Repository Structure
 .
-├── marl_assignment1.py          # Main implementation
-├── assign1.pdf                  # Final report
-├── manual_derivations.pdf       # Handwritten Bellman derivations (3×3 grid)
-├── convergence_plot.png
-├── orientation_aware_10.png
-├── policy_risk_0_1.png
-├── policy_risk_0_3.png
-├── ...
-└── README.md
-🧠 Problem Overview
-🔹 Question 1 – Orientation-Aware Navigation
+├── marl_assignment1.ipynb  
+├── assign1.pdf  
+├── manual_derivations.pdf  
+├── convergence_plot.png  
+├── orientation_aware_10.png  
+├── policy_risk_0_1.png  
+├── policy_risk_0_3.png  
+└── README.md  
 
-State: 
-𝑠
-=
-(
-𝑥
-,
-𝑦
-,
-𝜃
-)
-s=(x,y,θ)
+---
 
-Actions: Forward, TurnLeft, TurnRight
+# Question 1 – Orientation-Aware Navigation
 
-Stochastic forward motion (slip probability)
+State:
+s = (x, y, θ)
 
-Collision and goal terminal states
+- x, y are grid coordinates  
+- θ ∈ {0, π/2, π, 3π/2} represents orientation  
 
-Key Insight:
+Actions:
+- Forward  
+- TurnLeft  
+- TurnRight  
 
-Including orientation in the state space fundamentally changes policy structure.
+Forward action is stochastic:
+- 0.8 probability intended movement  
+- 0.1 slip left  
+- 0.1 slip right  
 
-🔹 Question 2 – Battery-Aware Navigation
+Collision and goal states are terminal.
 
-State: 
-𝑠
-=
-(
-𝑥
-,
-𝑦
-,
-𝑏
-)
-s=(x,y,b)
+### Implementation Note
 
-Recharge action available at charging stations
+A reduced 3×3 grid was first implemented to manually verify the first three iterations of Value Iteration and Policy Iteration.  
+After confirming correctness, the same algorithm was extended to the full 10×10 grid for final experiments.
 
-Terminal failure if battery depletes
+### Key Insight
 
-Key Insight:
+Including orientation in the state space significantly changes the structure of the optimal policy.
 
-Battery-awareness emerges naturally from reward optimization.
+---
 
-🔹 Question 3 – Risk-Sensitive Navigation
+# Question 2 – Battery-Aware Navigation
 
-Hazard zones with slip probability
+State:
+s = (x, y, b)
 
-Catastrophic penalty (-200)
+- b represents battery level  
 
-Risk-adjusted decision-making
+Actions:
+- MoveUp  
+- MoveDown  
+- MoveLeft  
+- MoveRight  
+- Recharge  
 
-Key Insight:
+Battery depletion away from charging stations leads to a terminal failure state.
 
-Shortest path is not always optimal under stochastic risk.
+### Key Insight
 
-⚙️ Algorithms Implemented
-1️⃣ Value Iteration
+Battery-aware behavior emerges automatically from reward optimization without explicitly programming safety rules.
+
+---
+
+# Question 3 – Risk-Sensitive Navigation
+
+State:
+s = (x, y, h)
+
+- h indicates proximity to a hazardous region  
+
+Near hazards, actions may slip into a catastrophic terminal state.
+
+### Key Insight
+
+Shortest path intuition fails under stochastic risk.  
+The agent selects longer but safer paths when catastrophic penalties dominate expected return.
+
+---
+
+# Algorithms Implemented
+
+## Value Iteration
 
 Bellman Optimality Update:
 
-𝑉
-𝑘
-+
-1
-(
-𝑠
-)
-=
-max
-⁡
-𝑎
-∑
-𝑠
-′
-𝑃
-(
-𝑠
-′
-∣
-𝑠
-,
-𝑎
-)
-[
-𝑅
-+
-𝛾
-𝑉
-𝑘
-(
-𝑠
-′
-)
-]
-V
-k+1
-	​
+V_{k+1}(s) = max_a Σ P(s'|s,a) [ R + γ V_k(s') ]
 
-(s)=
-a
-max
-	​
+For the 10×10 grid:
+- Iterations: 89  
+- Runtime: ~0.15 sec  
+- Memory: 51968 bytes  
 
-s
-′
-∑
-	​
+Value Iteration requires more iterations but each update is computationally simple.
 
-P(s
-′
-∣s,a)[R+γV
-k
-	​
+---
 
-(s
-′
-)]
-
-Converges in 89 iterations (10×10 grid)
-
-Memory efficient
-
-Simpler update rule
-
-2️⃣ Policy Iteration
+## Policy Iteration
 
 Alternates between:
+- Policy Evaluation  
+- Policy Improvement  
 
-Policy Evaluation
+For the 10×10 grid:
+- Policy improvement steps: 9  
+- Runtime: ~0.34 sec  
+- Memory: 113486 bytes  
 
-Policy Improvement
+Policy Iteration converges in fewer outer iterations but requires more memory because it stores both the value function and the policy table.
 
-Converges in 9 improvement steps
+---
 
-Higher memory usage (stores value + policy)
+## Monte Carlo Method
 
-Fewer outer iterations but heavier computation per step
+- Model-free approach  
+- Uses sampled episodes  
+- Requires many episodes for convergence  
 
-3️⃣ Monte Carlo
+Monte Carlo is useful when transition probabilities are unknown, but it is slower compared to model-based dynamic programming methods.
 
-Model-free
+---
 
-Requires many episodes
+# Convergence and Visualization
 
-Useful when transition model is unknown
+The notebook includes:
 
-📊 Experimental Results (10×10 Grid)
-Method	Iterations	Runtime (sec)	Memory (bytes)
-Value Iteration	89	~0.15	51968
-Policy Iteration	9	~0.34	113486
-Observations:
+- Bellman error convergence plots  
+- Orientation-aware policy visualization  
+- Battery-aware policy visualization  
+- Risk-sensitive policy comparison (different slip probabilities)  
+- Monte Carlo comparison  
 
-VI requires more iterations but runs faster.
+---
 
-PI converges in fewer steps but consumes more memory.
-
-Model-based methods outperform Monte Carlo in convergence speed.
-
-📈 Convergence Behavior
-
-Convergence plots are included for:
-
-Q1 (Orientation-aware)
-
-Q2 (Battery-aware)
-
-Q3 (Risk-sensitive)
-
-Bellman error decreases monotonically, confirming correctness.
-
-🧪 Manual Verification
+# Manual Verification
 
 To validate correctness:
 
-A reduced 3×3 grid was used.
+- A 3×3 grid was used to compute the first three Bellman updates manually.
+- Handwritten derivations are included in `manual_derivations.pdf`.
 
-First three Bellman updates were computed manually.
+This verifies correctness before scaling to the 10×10 environment.
 
-Handwritten derivations are included in manual_derivations.pdf.
+---
 
-This verifies correctness before scaling to the full 10×10 grid.
+# How to Run
 
-🏗️ How to Run
-python marl_assignment1.py
+## Option 1 – Jupyter Notebook (Recommended)
 
-The script:
+Open:
 
-Runs Value Iteration
+marl_assignment1.ipynb
 
-Runs Policy Iteration
+Run all cells sequentially.
 
-Compares runtime & memory
+The notebook:
+- Runs Value Iteration  
+- Runs Policy Iteration  
+- Compares runtime and memory  
+- Generates convergence plots  
+- Visualizes optimal policies  
 
-Generates policy visualizations
+## Option 2 – Exported Script (if applicable)
 
-Plots convergence graphs
+If converted to Python:
 
-🎯 Key Takeaways
+python marl_assignment1_22268.py
 
-State representation critically affects optimal policy.
+---
 
-Long-term penalties significantly alter behavior.
+# Summary
 
-Risk and uncertainty invalidate shortest-path intuition.
+This project demonstrates how:
 
-Reward design strongly influences emergent behavior.
+- State representation affects optimal behavior.
+- Reward structure influences emergent decision-making.
+- Risk and uncertainty alter shortest-path intuition.
+- Model-based methods converge faster than sampling-based approaches.
 
-📚 Course
+---
 
-Multi-Agent Reinforcement Learning
-Assignment 1
+Course: Multi-Agent Reinforcement Learning  
+Assignment 1  
+Author: Rudra Baunk
